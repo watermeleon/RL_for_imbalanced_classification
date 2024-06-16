@@ -1,0 +1,30 @@
+program: train_imbalanced_classification.py
+name: ratios_ppo_emoji
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: ppo
+  dataset:
+    value: emoji
+  random_seed:
+    value: 83
+  emoji_ratio:
+    values: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+  reward_scale_type:
+    value: EO
+  num_epoch:
+    value: 10
+  lr:
+    value: 3.0e-5
+  critic_lr:
+    value: 1.0e-4
+  eps_clip:
+    value: 0.3
+  entropy_coef:
+    value: 0.1
+  batch_size:
+    value: 512
+

@@ -1,0 +1,27 @@
+program: train_imbalanced_classification.py
+name: final_res_supervised_emoji
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: mp
+  dataset:
+    value: emoji
+    # value: biasbios
+  random_seed:
+    values: [1, 42, 83, 3, 37]
+  reward_scale_type:
+    values: [constant]
+  num_epoch:
+    value: 10
+  lr:
+    value: 1.0e-3
+  batch_size:
+    value: 512
+  debias_embs:
+    value: mp
+  debiase_posthoc:
+    value: True
+

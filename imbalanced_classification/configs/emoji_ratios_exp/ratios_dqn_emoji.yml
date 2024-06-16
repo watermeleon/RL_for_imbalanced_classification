@@ -1,0 +1,28 @@
+program: train_imbalanced_classification.py
+name: ratios_dqn_emoji
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: dqn
+  dataset:
+    value: emoji
+  random_seed:
+    value: 83
+  emoji_ratio:
+    values: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+  reward_scale_type:
+    value: EO
+  num_epoch:
+    value: 10
+  lr:
+    value: 3.0e-4
+  EPS_END:
+    value: 0.01
+  EPS_DECAY_FACTOR:
+    value: 0.5
+  batch_size:
+    value: 32
+

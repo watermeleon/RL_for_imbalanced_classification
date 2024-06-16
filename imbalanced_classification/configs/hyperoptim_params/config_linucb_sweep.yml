@@ -1,0 +1,22 @@
+program: train_imbalanced_classification.py
+name: sweepdemo_linucb_emoji
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: linucb
+  dataset:
+    value: emoji
+    # value: biasbios
+  reward_scale_type:
+    value: EO
+  num_epoch:
+    value: 3
+  linucb_alpha:
+    values: [0.5, 2.0]
+    # values: [2.0, 2.5]
+    # values: [0.1, 0.5,  1.0, 1.5, 2.0, 2.5]
+
+

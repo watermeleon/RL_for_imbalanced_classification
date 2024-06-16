@@ -1,0 +1,23 @@
+program: train_imbalanced_classification.py
+name: sweepdemo_dqn_v2_emoji
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: dqn
+  dataset:
+    value: emoji
+    # value: biasbios
+  reward_scale_type:
+    value: EO
+  lr:
+    values: [3.0e-4, 1.0e-4, 3.0e-5, 1.0e-5, 3.0e-6]
+  batch_size:
+    values: [32, 64]
+  EPS_END:
+    values: [0.001, 0.01, 0.1] 
+  EPS_DECAY_FACTOR:
+    values: [0.5, 0.9, 1.0]
+

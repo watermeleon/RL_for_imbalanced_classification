@@ -1,0 +1,26 @@
+program: train_imbalanced_classification.py
+name: gbool_linucb_bios28
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: linucb
+  dataset:
+    # value: emoji
+    value: biasbios
+  use_most_common_classes:
+    value: False
+  reward_scale_type:
+    values: [EO, constant]
+  num_epoch:
+    value: 2
+  random_seed:
+    values: [1, 42, 83, 3, 37]
+  linucb_alpha:
+    value: 1.5
+  gender_bool:
+    value: True
+  exp_name:
+   value: BoolasSpider - gbool

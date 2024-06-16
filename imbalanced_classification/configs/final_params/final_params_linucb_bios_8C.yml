@@ -1,0 +1,23 @@
+program: train_imbalanced_classification.py
+name: final_res_linucb_bios8
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: linucb
+  dataset:
+    # value: emoji
+    value: biasbios
+  use_most_common_classes:
+    value: True
+  reward_scale_type:
+    values: [EO, constant]
+  num_epoch:
+    value: 2
+  random_seed:
+    values: [1, 42, 83, 3, 37]
+  linucb_alpha:
+    value: 1.5
+

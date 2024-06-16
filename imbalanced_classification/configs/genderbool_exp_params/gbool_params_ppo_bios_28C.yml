@@ -1,0 +1,35 @@
+program: train_imbalanced_classification.py
+name: gbool_ppo_bios
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: ppo
+  dataset:
+    # value: emoji
+    value: biasbios
+  use_most_common_classes:
+    value: False
+  random_seed:
+    values: [1, 42, 83, 3, 37]
+  reward_scale_type:
+    values: [EO, constant]
+  num_epoch:
+    value: 10
+  lr:
+    value: 1.0e-4
+  critic_lr:
+    value: 1.0e-3
+  eps_clip:
+    value: 0.1
+  entropy_coef:
+    value: 0.2
+  batch_size:
+    value: 512
+  gender_bool:
+    value: True
+  exp_name:
+   value: BoolasSpider - gbool
+

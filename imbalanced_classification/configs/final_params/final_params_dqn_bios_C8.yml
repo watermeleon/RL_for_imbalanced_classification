@@ -1,0 +1,29 @@
+program: train_imbalanced_classification.py
+name: final_res_dqn_bios8
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: dqn
+  dataset:
+    # value: emoji
+    value: biasbios
+  use_most_common_classes:
+    value: True
+  random_seed:
+    values: [1, 42, 83, 3, 37]
+  reward_scale_type:
+    values: [EO, constant]
+  num_epoch:
+    value: 10
+  lr:
+    value: 3.0e-6
+  EPS_END:
+    value: 0.1
+  EPS_DECAY_FACTOR:
+    value: 0.5
+  batch_size:
+    value: 256
+

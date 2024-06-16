@@ -1,0 +1,23 @@
+program: train_imbalanced_classification.py
+name: sweepdemo_bias_ppo_sweep3
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: ppo
+  dataset:
+    # value: emoji
+    value: biasbios
+  lr:
+    value: 1.0e-4
+  critic_lr:
+    value: 1.0e-3
+  eps_clip:
+    values: [0.05, 0.1, 0.2, 0.3] 
+  entropy_coef:
+    values: [0.01, 0.05, 0.1, 0.2] 
+  batch_size:
+    value: 512
+

@@ -1,0 +1,22 @@
+program: train_imbalanced_classification.py
+name: reward_scale_linucb
+method: grid
+metric:
+  goal: minimize
+  name: best_eval_dto
+parameters:
+  train_type:
+    value: linucb
+  dataset:
+    value: biasbios
+  use_most_common_classes:
+    value: False
+  reward_scale_type:
+    values: [imb_ratio_plus, imb_ratio_neg, gender_and_prof]
+  num_epoch:
+    value: 2
+  random_seed:
+    values: [1, 42, 83, 3, 37]
+  linucb_alpha:
+    value: 1.5
+

@@ -1,0 +1,11 @@
+data/
+results/
+movielens_data/
+*.zip
+*.pickle
+*.pyc
+wandb/
+__pycache__/
+**/__pycache__/
+**/citation_data/
+notebooks/seed_plots/

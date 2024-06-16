@@ -1,0 +1,64 @@
+{
+    "EPS_START": 1.0,
+    "EPS_END": 0.01,
+    "EPS_DECAY_FACTOR": 1.0,
+    "t_eval": 50000,
+    "random_seed" : 2,
+    "num_workers": 0,
+    "datapath": "./data/",
+    "dataset": "biasbios",
+    "emoji_ratio": 0.0,
+    "run_id": 0,
+
+    "gender_bool": false,
+    "debias_embs" : "none", 
+    "debias_per_class": false,
+    "debias_load_stored": false,
+    "weighted_mp": false,
+    "debiase_posthoc": false,
+
+    "inlp_num_classifiers": 50,
+    "inlp_by_class": true,
+
+    "sup_scale_onehot": true,
+
+    "exp_name": "Agent1 - ",
+    "create_data": false,
+    "num_epoch": 1,
+    "use_most_common_classes": false,
+    "skew_data": false,
+    "wandb_name": "RL_for_imbalanced_classification",
+    "store_tpr_wandb": false,
+    "use_wandbid_name": false,
+ 
+    "train_type": "linucb",
+    "reward_scale_type": "constant",
+
+    "n_hidden": 128,
+    "lr":3e-4,
+    "critic_lr": 1e-3,
+    "batch_size" : 128,
+    "entropy_coef": 0.05,
+    "K_epochs": 10,
+    "eps_clip": 0.2,
+    "use_critic": true,
+    "use_rl_scheduler": true,
+    "patience": 3,
+
+    "linucb_alpha": 1.5,
+
+    "test_only": false,    
+
+    "normalize_rewards": true,
+    "global_double_loss": false,
+    "store_plots": false,
+    "store_critic_plots": false,
+
+    "scale_tpr": 0.5,
+    "use_reward_model": false,
+    "rm_num_batches": 128,
+    "rm_batch_size": 256,
+    "rm_update_every": 50,
+    "rm_scale_range": 100
+}
+
