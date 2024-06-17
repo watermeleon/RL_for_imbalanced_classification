@@ -8,13 +8,9 @@
     "datapath": "./data/",
     "dataset": "biasbios",
     "emoji_ratio": 0.0,
-    "run_id": 0,
 
     "gender_bool": false,
-    "debias_embs" : "none", 
-    "debias_per_class": false,
-    "debias_load_stored": false,
-    "weighted_mp": false,
+    "debias_embs" : "mp", 
     "debiase_posthoc": false,
 
     "inlp_num_classifiers": 50,

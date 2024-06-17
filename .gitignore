@@ -3,13 +3,10 @@ data/biasbios_bert_embs/*
 data/deepmoji/*
 !data/deepmoji/README.md
 results/
-movielens_data/
 *.zip
 *.pickle
 *.pyc
 wandb/
 __pycache__/
 **/__pycache__/
-**/citation_data/
-notebooks/seed_plots/
 rl_imb_class

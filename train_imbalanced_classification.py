@@ -4,6 +4,7 @@ import os
 import json
 import sys
 from pathlib import Path
+import time
 
 # Third party imports
 import numpy as np
@@ -69,15 +70,7 @@ if __name__ == '__main__':
     config["device"] = device    
     config["subset_classes"] = subset_classes
     config["class_mapping"] = class_mapping
-
-    print(config)
-    run_id = config["run_id"]
-
-    # sleep 5 seconds times the run_id to avoid overwriting the same file
-    import time
-    n_secs = 5 * int(run_id)+0.1
-    print(f"Sleeping for {n_secs} seconds")
-    time.sleep(n_secs)
+    num_workers = config["num_workers"]
 
     all_train_types = ["ppo", "supervised", "dqn", "thompson", "linucb", "mp", "inlp"]
     train_type = config["train_type"]
@@ -98,7 +91,6 @@ if __name__ == '__main__':
 
     model_name = f"{config['exp_name']}_{config['dataset']}_{config['train_type']}_S{config['random_seed']}{num_classes}_R{config['reward_scale_type']}"
     config["model_name"] = model_name
-    print("model_name", model_name)
 
     wandb_mode = "disabled" if  config["wandb_username"] == "None" else "online"
     wandb.init(project=wandb_name ,name=config['model_name'], entity=config["wandb_username"], mode="disabled")
@@ -109,7 +101,7 @@ if __name__ == '__main__':
         wandbid = wandb.run.id
         model_name = f"{model_name}_WBID{wandbid}"
         config["model_name"] = model_name
-        print("model_name", model_name)
+        print("Model_name is:", model_name)
         wandb.config.update(config, allow_val_change=True)
 
     # set random_seeds
@@ -117,19 +109,12 @@ if __name__ == '__main__':
     np.random.seed(random_seed)
     torch.manual_seed(random_seed)
 
-    num_workers = config["num_workers"]
 
     # define the paths
     repo_path = "./"
 
-
     # Set the user to distinguish between HPC and personal laptop
     dir_path = os.path.dirname(os.path.realpath(__file__)).split('/')
-    user = "snelius"
-    if "leonardo" in dir_path:
-        print('Using Linux settings')
-        user = "leonardo"
-    config["user"] = user
 
     # load the data and init all hyperparameters
     if config["dataset"] == "biasbios":
@@ -142,8 +127,6 @@ if __name__ == '__main__':
             p2i, i2p, _, _ = remap_professions(p2i, i2p, prof2fem, prof2perc, subset_classes)
         prof2fem = {i2p[k]:v for k,v in prof2fem_indV2.items()}
         prof2perc = {i2p[k]:v for k,v in prof2perc.items()}
-        print("prof2fem",prof2fem)
-        print("prof2perc",prof2perc)
         config["i2p"] = i2p
         prof2fem_indx = {p2i[k]:v for k,v in prof2fem.items()}
 
@@ -205,41 +188,6 @@ if __name__ == '__main__':
     train_env.seed(random_seed)
     n_steps = int(len(x_train)*config["num_epoch"])
 
-    def get_embeddings(model, dataloader):
-        
-        embeddings = []
-
-        def hook(module, input, output):
-            embeddings.append(output)
-
-        # Register the hook on the last layer of the model
-        model[-2].register_forward_hook(hook)
-
-        # Pass the data through the model
-        for batch in dataloader:
-            batch = batch[0]
-            model(batch)
-
-        # Remove the hook
-        model[-2]._forward_hooks.clear()
-
-        return torch.cat(embeddings)
-    
-    def get_hidden_states(model, dataset_train, dataset_dev, dataset_test):
-        model.eval()
-
-        batch_size = 512
-        dataloader_train = torch.utils.data.DataLoader(dataset_train, shuffle=False, batch_size=batch_size, num_workers=num_workers)
-        dataloader_dev = torch.utils.data.DataLoader(dataset_dev, shuffle=False, batch_size=batch_size, num_workers=num_workers)
-        dataloader_test = torch.utils.data.DataLoader(dataset_test, shuffle=False, batch_size=batch_size, num_workers=num_workers)
-
-        new_x_train = get_embeddings(model, dataloader_train)
-        new_x_dev = get_embeddings(model, dataloader_dev)
-        new_x_test = get_embeddings(model, dataloader_test)
-
-        model.train()
-
-        return new_x_train.cpu().detach().numpy(), new_x_dev.cpu().detach().numpy(), new_x_test.cpu().detach().numpy()
 
     if config["test_only"] is True:
         if config["train_type"] == "ppo":
@@ -261,8 +209,8 @@ if __name__ == '__main__':
 
             # create dataloaders
             dataset_train = FlexibleDataSet([x_train, y_train, train_genders, imbalanced_penalty], device=device)
-            dataloader_train = torch.utils.data.DataLoader(dataset_train, shuffle=True, batch_size=config["batch_size"], num_workers=num_workers)
-            dataloader_val = torch.utils.data.DataLoader(dataset_val, shuffle=False, batch_size=512, num_workers=num_workers)
+            dataloader_train = DataLoader(dataset_train, shuffle=True, batch_size=config["batch_size"], num_workers=num_workers)
+            dataloader_val = DataLoader(dataset_val, shuffle=False, batch_size=512, num_workers=num_workers)
             
             ppo_agent, all_eval_metrics = train_ppo(train_env, dataloader_train, dataloader_val, input_size, num_classes, model_name, config, wandb)
             model = ppo_agent.policy_old.actor  
@@ -276,7 +224,7 @@ if __name__ == '__main__':
             y_train_onehot =  F.one_hot(y_train, num_classes=num_classes).type(torch.FloatTensor)
             y_dev_onehot =  F.one_hot(y_dev, num_classes=num_classes).type(torch.FloatTensor)
             dataset_val = FlexibleDataSet([x_dev, y_dev_onehot, dev_genders], device=device)
-            dataloader_val = torch.utils.data.DataLoader(dataset_val, shuffle=False, batch_size=512, num_workers=num_workers)
+            dataloader_val = DataLoader(dataset_val, shuffle=False, batch_size=512, num_workers=num_workers)
             
             imbalanced_penalty = create_reward_scale_list(prof2fem_indx, y_train, train_genders, config["reward_scale_type"])    
 
@@ -286,14 +234,14 @@ if __name__ == '__main__':
                 dataset_train = FlexibleDataSet([x_train, y_train_onehot, imbalanced_penalty], device=device)
             else:
                 dataset_train = FlexibleDataSet([x_train, y_train_onehot], device=device)
-            dataloader_train = torch.utils.data.DataLoader(dataset_train, shuffle=True, batch_size=config["batch_size"], num_workers=num_workers)
+            dataloader_train = DataLoader(dataset_train, shuffle=True, batch_size=config["batch_size"], num_workers=num_workers)
 
             all_eval_metrics = model.train_supervised(dataloader_train, dataloader_val, config, wandb)
             model = model.model
 
             if config["debias_embs"] != "none" and config["debiase_posthoc"] == True:
                 print("DEBIASING EMBEDDINGS - after supervised training")
-                x_train, x_dev, x_test = get_hidden_states(model, FlexibleDataSet([x_train], device=device), FlexibleDataSet([x_dev], device=device), FlexibleDataSet([x_test], device=device))
+                x_train, x_dev, x_test = get_hidden_states(model, FlexibleDataSet([x_train], device=device), FlexibleDataSet([x_dev], device=device), FlexibleDataSet([x_test], device=device, num_workers=num_workers))
                 debias_function = get_debiase_method(config)
                 y_train_np, y_dev_np, y_test_np = y_train.cpu().detach().numpy(), y_dev.cpu().detach().numpy(), y_test.cpu().detach().numpy()
                 x_train, x_dev, x_test = debias_function(x_train, y_train_np, x_dev, y_dev_np, x_test, y_test_np, train_genders, dev_genders, test_genders, config, load_or_store_data=True)
@@ -304,13 +252,11 @@ if __name__ == '__main__':
                 x_test = nump_to_torch(x_test.squeeze()).float()
 
 
-
-
         elif config["train_type"] == "dqn" or config["train_type"] == "thompson" or config["train_type"] == "linucb":
             """ Deep Q-learning"""
             model = NeuralBandit2(num_classes, input_size, learning_rate=lr,n_steps=n_steps, config = config)
             dataset_val = FlexibleDataSet([x_dev, y_dev, dev_genders], device=device)
-            dataloader_val = torch.utils.data.DataLoader(dataset_val, shuffle=False, batch_size=512, num_workers=num_workers)
+            dataloader_val = DataLoader(dataset_val, shuffle=False, batch_size=512, num_workers=num_workers)
             if config["train_type"] == "thompson": 
                 all_eval_metrics = model.train_thompson_agent(train_env, n_steps, dataloader_val, config, wandb)
             elif config["train_type"] == "linucb":
@@ -347,7 +293,6 @@ if __name__ == '__main__':
     best_eval_dto = np.min(all_dto_eval_vals)
 
     #predict on test set
-    print("test res:", model(x_test[0].unsqueeze(0)))
     y_pred = evaluate_on_test_set(model, x_test, y_test, device=device)
 
     # if y_pred is a tensor, convert to list
@@ -360,7 +305,6 @@ if __name__ == '__main__':
     pred_y_path = repo_path + result_path +  'pred_1'
     Path(os.path.dirname(pred_y_path)).mkdir(parents=True, exist_ok=True) # create parent folders of file
     np.savetxt(pred_y_path, y_pred)
-
 
     tpr_gaps = get_tpr(y_pred, y_test, i2p, test_genders)
     tpr_gap_rms_test = calc_tpr_gap(tpr_gaps)
