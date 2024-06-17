@@ -19,7 +19,6 @@
     "create_data": false,
     "num_epoch": 1,
     "use_most_common_classes": false,
-    "skew_data": false,
     "wandb_name": "RL_for_imbalanced_classification",
     "store_tpr_wandb": false,
     "use_wandbid_name": false,

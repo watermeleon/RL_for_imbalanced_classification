@@ -19,7 +19,7 @@ def remap_professions(p2i, i2p, prof2fem, prof2perc, subset_classes):
 
 
 
-def get_subset_by_gender(X, Y, genders, gender_percentage_dict={}, config=None):
+def get_subset_by_gender(X, Y, genders, config=None):
     """
     This function returns a subset of elements (X, Y, genders) that matches the desired gender ratio for each profession
     specified in gender_percentage_dict. It adjusts the subset by subsampling for one gender to match the desired percentage.
@@ -51,42 +51,10 @@ def get_subset_by_gender(X, Y, genders, gender_percentage_dict={}, config=None):
         Y_profession = Y[profession_mask]
         gender_profession = genders[profession_mask]
 
-        if profession in gender_percentage_dict:
-            desired_percentage_female = gender_percentage_dict[profession]
-
-            # Calculate the number of females needed to achieve the desired percentage
-            total_profession = len(X_profession)
-            num_females_needed = int(total_profession * desired_percentage_female)
-            female_mask = gender_profession == 1
-            male_mask = np.logical_not(female_mask)
-            
-            actual_num_females = np.sum(female_mask)
-            actual_num_males = np.sum(male_mask)
-
-            if actual_num_females > num_females_needed:
-                # More females than needed, subsample females
-                females_to_select = num_females_needed
-                males_to_select = actual_num_males  # Keep all males
-            else:
-                # Not enough females, calculate how many males to keep to meet the desired percentage
-                females_to_select = actual_num_females  # Keep all females
-                # The target number of males to match the desired percentage of females
-                males_to_select = min(actual_num_males, int((actual_num_females / desired_percentage_female) - actual_num_females))
-
-            # Selecting subsets
-            females_selected = np.where(female_mask)[0][:females_to_select]
-            males_selected = np.where(male_mask)[0][:males_to_select]
-            
-            selected_indices = np.concatenate((females_selected, males_selected))
-            
-            subset_X.extend(X_profession[selected_indices])
-            subset_Y.extend(Y_profession[selected_indices])
-            subset_genders.extend(gender_profession[selected_indices])
-            
-        else:
-            subset_X.extend(X_profession)
-            subset_Y.extend(Y_profession)
-            subset_genders.extend(gender_profession)
+       
+        subset_X.extend(X_profession)
+        subset_Y.extend(Y_profession)
+        subset_genders.extend(gender_profession)
     
     subset_Y_new_idx = np.array([class_mapping[y] for y in subset_Y])
     return np.array(subset_X), np.array(subset_Y_new_idx), np.array(subset_genders)
@@ -143,11 +111,7 @@ def load_profession_data(datapath, config):
         dev_genders = np.array(pickle.load(fp))
 
     if config["use_most_common_classes"]:
-        if config["skew_data"] is True:
-            gender_percentage_dict = {22:0.9, 2:0.2}
-        else:
-            gender_percentage_dict = {} # empty means no skewing
-        x_train, y_train, train_genders = get_subset_by_gender(x_train, y_train, train_genders, gender_percentage_dict=gender_percentage_dict, config=config)
+        x_train, y_train, train_genders = get_subset_by_gender(x_train, y_train, train_genders, config=config)
         x_dev, y_dev, dev_genders =  get_subset_by_gender(x_dev, y_dev, dev_genders, config=config)
         x_test, y_test, test_genders = get_subset_by_gender(x_test, y_test, test_genders, config=config)
 
