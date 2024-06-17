@@ -92,8 +92,7 @@ def get_MP_cleaned_data_all(x_train, y_train, x_dev, y_dev, x_test, y_test, gend
 
 
 def get_INLP_cleaned_data_all(x_train, y_train, x_dev, y_dev, x_test, y_test, gender_train, gender_dev, gender_test, config, load_or_store_data=True):
-    by_class_str = "_by_class" if config["inlp_by_class"] else ""
-    task_name = config['dataset'] + "_INLP_all" + by_class_str
+    task_name = config['dataset'] + "_INLP_all" 
     datapath = config['datapath']
     verbose = True
 
@@ -127,7 +126,7 @@ def get_INLP_cleaned_data_all(x_train, y_train, x_dev, y_dev, x_test, y_test, ge
                                                         x_test_shuffled, 
                                                         gender_train_shuffled,
                                                         x_dev, gender_dev,
-                                                        majority_acc=0.1, verbose=verbose, by_class=config["inlp_by_class"], 
+                                                        majority_acc=0.1, verbose=verbose, by_class=True, 
                                                         Y_train_main=y_train, Y_dev_main=y_dev)
     # Clean data
     x_train_clean = np.dot(x_train, output_p)  

@@ -14,7 +14,6 @@
     "debiase_posthoc": false,
 
     "inlp_num_classifiers": 50,
-    "inlp_by_class": true,
 
     "exp_name": "Agent1 - ",
     "create_data": false,

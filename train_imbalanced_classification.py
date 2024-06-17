@@ -72,7 +72,7 @@ if __name__ == '__main__':
     config["class_mapping"] = class_mapping
     num_workers = config["num_workers"]
 
-    all_train_types = ["ppo", "supervised", "dqn", "thompson", "linucb", "mp", "inlp"]
+    all_train_types = ["ppo", "supervised", "dqn", "linucb", "mp", "inlp"]
     train_type = config["train_type"]
     assert train_type in all_train_types, f"provided train_type is {train_type}, but must be one of {all_train_types}"
     assert config["dataset"] in ["biasbios", "emoji"], "dataset must be one of [biasbios, emoji]"
@@ -252,14 +252,13 @@ if __name__ == '__main__':
                 x_test = nump_to_torch(x_test.squeeze()).float()
 
 
-        elif config["train_type"] == "dqn" or config["train_type"] == "thompson" or config["train_type"] == "linucb":
+        elif config["train_type"] == "dqn" or config["train_type"] == "linucb":
             """ Deep Q-learning"""
             model = NeuralBandit2(num_classes, input_size, learning_rate=lr,n_steps=n_steps, config = config)
             dataset_val = FlexibleDataSet([x_dev, y_dev, dev_genders], device=device)
             dataloader_val = DataLoader(dataset_val, shuffle=False, batch_size=512, num_workers=num_workers)
-            if config["train_type"] == "thompson": 
-                all_eval_metrics = model.train_thompson_agent(train_env, n_steps, dataloader_val, config, wandb)
-            elif config["train_type"] == "linucb":
+  
+            if config["train_type"] == "linucb":
                 print("Training with LinUCB")
                 model, all_eval_metrics = model.train_linucb_agent(train_env, n_steps, dataloader_val, config, wandb)
             else:
