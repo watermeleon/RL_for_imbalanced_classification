@@ -1,5 +1,7 @@
 data/biasbios_bert_embs/*
+!data/biasbios_bert_embs/README.md
 data/deepmoji/*
+!data/deepmoji/README.md
 results/
 movielens_data/
 *.zip
