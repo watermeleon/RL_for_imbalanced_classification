@@ -32,7 +32,6 @@ else:
     print("Device set to : cpu")
 
 
-# {2: 'attorney', 11: 'journalist', 13: 'nurse', 18: 'photographer', 19: 'physician', 21: 'professor', 22: 'psychologist', 26: 'teacher'}
 subset_classes = [2, 11, 13, 18, 19, 21, 22, 26]
 class_mapping = {cls: i for i, cls in enumerate(subset_classes)} # maps from old2new index
 
@@ -67,7 +66,6 @@ if __name__ == '__main__':
         config = json.load(config_file)
 
     config = args_update_config(config)
-    config["datafolder"] = "embeddings_folder"    
     config["device"] = device    
     config["subset_classes"] = subset_classes
     config["class_mapping"] = class_mapping
@@ -86,7 +84,6 @@ if __name__ == '__main__':
     assert train_type in all_train_types, f"provided train_type is {train_type}, but must be one of {all_train_types}"
     assert config["dataset"] in ["biasbios", "emoji"], "dataset must be one of [biasbios, emoji]"
 
-    # wandb.init(project="occup_class_RewardModel_Mk2" ,name=config['model_name'], entity="watermelontology", mode="disabled")
     wandb_name = "occup_class_Top8_LinUCB"
     if "wandb_name" in config and config["wandb_name"] is not False:
         wandb_name = config["wandb_name"]
@@ -102,11 +99,12 @@ if __name__ == '__main__':
     model_name = f"{config['exp_name']}_{config['dataset']}_{config['train_type']}_S{config['random_seed']}{num_classes}_R{config['reward_scale_type']}"
     config["model_name"] = model_name
     print("model_name", model_name)
-    wandb.init(project=wandb_name ,name=config['model_name'], entity="watermelontology", mode="disabled")
+
+    wandb_mode = "disabled" if  config["wandb_username"] == "None" else "online"
+    wandb.init(project=wandb_name ,name=config['model_name'], entity=config["wandb_username"], mode="disabled")
     wandb.config.update(config)
     print(wandb.config)
 
-    # wandbid = ""
     if config["use_wandbid_name"] is True:
         wandbid = wandb.run.id
         model_name = f"{model_name}_WBID{wandbid}"
@@ -135,13 +133,12 @@ if __name__ == '__main__':
 
     # load the data and init all hyperparameters
     if config["dataset"] == "biasbios":
-        prof2fem, prof2perc, x_train, y_train, x_dev, y_dev, x_test, y_test, train_genders, test_genders, dev_genders = loaddata(config["datapath"], config)
+        prof2fem, prof2perc, x_train, y_train, x_dev, y_dev, x_test, y_test, train_genders, test_genders, dev_genders = load_profession_data(config["datapath"], config)
 
         p2i, i2p = load_dictionary(config["datapath"] + 'profession2index.txt')
         prof2fem_indV2 = prof2fem
         prof2fem = {i2p[k]:v for k,v in prof2fem.items()}
         if config["use_most_common_classes"]:
-            # p2i, i2p, prof2fem, prof2perc = remap_professions(p2i, i2p, prof2fem, prof2perc, subset_classes)
             p2i, i2p, _, _ = remap_professions(p2i, i2p, prof2fem, prof2perc, subset_classes)
         prof2fem = {i2p[k]:v for k,v in prof2fem_indV2.items()}
         prof2perc = {i2p[k]:v for k,v in prof2perc.items()}
@@ -158,19 +155,18 @@ if __name__ == '__main__':
 
     # MP debiasing and sensitive information added explicitely.
     if config["gender_bool"] is True:
-        print("ADDING GENDERBOOL TO X DATA")
+        print("Adding gender label to the input data")
         # add the gender value to the X data
         x_train = np.concatenate((x_train, train_genders.reshape(-1, 1)), axis=1)
         x_test = np.concatenate((x_test, test_genders.reshape(-1, 1)), axis=1)
         x_dev = np.concatenate((x_dev, dev_genders.reshape(-1, 1)), axis=1)
         
     if config["debias_embs"] != "none" and config["debiase_posthoc"] == False:
-        print("DEBIASING EMBEDDINGS - before training")
+        print("Debiasing embeddings - before training")
         debias_function = get_debiase_method(config)
         x_train, x_dev, x_test = debias_function(x_train, y_train, x_dev, y_dev, x_test, y_test, train_genders, dev_genders, test_genders, config, load_or_store_data=True)
 
     input_size = x_train[0].shape[0]
-    print("input_size", input_size)
 
     # training parameters
     model_name = config["model_name"]
@@ -184,10 +180,8 @@ if __name__ == '__main__':
     else:
         num_classes = len(np.unique(y_dev))
 
-    print("num_classes", num_classes)
     lr = config["lr"]
     
-    print("before converting to torch")
     # convert data from numpy to torch tensors:
     def nump_to_torch(x):
         x =  torch.from_numpy(x)
@@ -200,7 +194,6 @@ if __name__ == '__main__':
     y_dev = nump_to_torch(y_dev).long()
     x_test = nump_to_torch(x_test.squeeze()).float()
     y_test = nump_to_torch(y_test).long()
-    print("after converting to torch")
 
     
     # assert reward_scale_type is one of the possible types
@@ -287,13 +280,6 @@ if __name__ == '__main__':
             
             imbalanced_penalty = create_reward_scale_list(prof2fem_indx, y_train, train_genders, config["reward_scale_type"])    
 
-            if config["sup_scale_onehot"]:
-                print("Scaling onehot labels")
-                # y_train_onehot shape:  torch.Size([255710, 28])
-                # imbalanced_penalty torch.Size([255710])
-                y_train_onehot = y_train_onehot*imbalanced_penalty.unsqueeze(1) 
-                imbalanced_penalty = np.ones_like(imbalanced_penalty)
-                config["reward_scale_type"] = "constant"
 
             # initialize dataloader training
             if config["reward_scale_type"] != "constant":
@@ -330,7 +316,6 @@ if __name__ == '__main__':
             elif config["train_type"] == "linucb":
                 print("Training with LinUCB")
                 model, all_eval_metrics = model.train_linucb_agent(train_env, n_steps, dataloader_val, config, wandb)
-                # model, all_eval_metrics = model.load_linucb_agent(train_env, n_steps, dataloader_val, config, wandb)
             else:
                 print("Training with DQN")
                 all_eval_metrics = model.train_dqn_agent(train_env, n_steps, dataloader_val, config, wandb)
@@ -338,7 +323,6 @@ if __name__ == '__main__':
 
         # check if MP
         if config["train_type"] == "mp" or config["train_type"] == "inlp":
-            # assert config["debias_embs"] in ["inlp", "mp"] , "MP or INLP training requires debiased embeddings"
             print("Training with MP - logistic regression")
             from sklearn.linear_model import LogisticRegression
 
@@ -354,9 +338,7 @@ if __name__ == '__main__':
             
             classifier.fit(x_train.cpu().detach().numpy(), y_train.cpu().detach().numpy())
 
-            # make a model a function that takes two arguments converts them to numpy and uses them for classifier.predict() to return a prediction
             model = lambda x: (torch.Tensor(classifier.predict(x.cpu().detach().numpy())), None)
-            print("finished training MP")
             all_eval_metrics = {1:{"eval_dto_dist": 0.0}, 2:{"eval_dto_dist": 0.0}}
 
 

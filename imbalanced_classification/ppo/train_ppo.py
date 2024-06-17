@@ -7,8 +7,7 @@ from tqdm import tqdm
 
 from imbalanced_classification.ppo.ppo_agent import *
 from utils import evaluate_on_validation_set
-from utils.metrics_and_stat_functions import get_tpr, get_tpr_per_gender, calc_tpr_gap, DTO, get_best_timestep
-from utils.plot_pp_pg import *
+from utils.metrics_and_stat_functions import   get_best_timestep
 
 
 def load_ppo_model(env, state_dim, action_dim, modelname, config):
@@ -38,76 +37,6 @@ def load_ppo_model(env, state_dim, action_dim, modelname, config):
 
 
 
-def plot_mean_std(means, stds, labels, epoch, result_path_file):
-    # Setting up the figure and axis
-    fig, ax = plt.subplots()
-    plt.ion()
-
-    # X locations for the groups
-    ind = np.arange(len(means))
-    # Bar width
-    width = 0.35       
-
-    # Plotting bars for means
-    ax.bar(ind, means, width, yerr=stds, capsize=5, label='Means with STD')
-
-    # Adding some text for labels, title, and custom x-axis tick labels
-    ax.set_ylabel('Values')
-    ax.set_title('Means and Standard Deviations by Dataset')
-    ax.set_xticks(ind)
-    ax.set_xticklabels(labels)
-    ax.legend()
-
-    # Show plot
-    plt.savefig(result_path_file)
-    plt.ioff()
-    plt.clf()
-
-def critic_values_1prof_2genders(ppo_agent, dataloader_val_split, epoch, result_path, prof = 2, prof_name = "Nurse"):
-    # proffesion 2 - nurse for T8 datavariant
-    state_list, class_list, gender_list = dataloader_val_split
-    mask_prof = class_list == prof
-
-    # get all the states where class is prof and gender is 1
-    mask_f = gender_list == 1
-    mask_m = gender_list == 0
-
-    state_list_f = state_list[mask_prof & mask_f]
-    state_list_m = state_list[mask_prof & mask_m]
-
-    # get the critic values for each state
-    critic_values_f = ppo_agent.policy.critic(state_list_f)
-    critic_values_m = ppo_agent.policy.critic(state_list_m)
-
-    # get the mean and std of the critic values
-    mean_critic_f = critic_values_f.mean().item()
-    std_critic_f = critic_values_f.std().item()
-
-    mean_critic_m = critic_values_m.mean().item()
-    std_critic_m = critic_values_m.std().item()
-
-    print("number of male nurses:", len(state_list_m))
-
-
-    # plot the critic values
-    labels = ["Male " + prof_name , "Female " + prof_name]
-    means = [mean_critic_m, mean_critic_f]
-    stds = [std_critic_m, std_critic_f]
-
-    result_path = result_path + "critic_values_plots" + "/" + prof_name
-    if not os.path.exists(result_path):
-        os.makedirs(result_path)
-    
-
-    result_path_file = result_path + f"/critic_values_{prof_name}_epoch{epoch}.png"
-    plot_mean_std(means, stds, labels, epoch, result_path_file)
-    return
-
-
-def critic_values_all_prof_2genders(ppo_agent, dataloader_val_split, epoch, result_path, i2p):
-
-    for prof_idx, prof_name in i2p.items():
-        critic_values_1prof_2genders(ppo_agent, dataloader_val_split, epoch, result_path, prof = prof_idx, prof_name = prof_name)
 
 def scale_list(scales, scale_min = 1.0, scale_max = 10):
     min_value = np.min(scales[np.nonzero(scales)])
@@ -245,9 +174,6 @@ def train_ppo(env, dataloader_train, dataloader_val, state_dim, action_dim, mode
             if time_step % eval_freq == 0:
                 # log metrics local and to wandb
                 log_running_reward, log_running_episodes, avg_loss, correct_batch_buffer = log_metrics(i_episode, time_step, log_running_reward, log_running_episodes, log_f, correct_batch_buffer, avg_loss, data_iter, wandb)
-
-                if config["dataset"] == "emoji" and config["store_critic_plots"] is True:
-                    critic_values_all_prof_2genders(ppo_agent, dataloader_val_split, epoch=epoch_i, result_path= result_path, i2p=config["i2p"])
                 
                 eval_acc, tpr_gap_pp, tpr_gap_rms = evaluate_on_validation_set(ppo_agent.policy.actor, dataloader_val_split, supervised = False, val_presplit=True)
                 print("Eval acc:", eval_acc, "tpr_gap_rms:", tpr_gap_rms )
@@ -257,9 +183,7 @@ def train_ppo(env, dataloader_train, dataloader_val, state_dim, action_dim, mode
 
                 tpr_gap_pp_list = np.array([tpr_gap_pp[i] if i in tpr_gap_pp else 0.0  for i in range(ppo_agent.action_dim)])
                 tpr_gap_plot = weight_plot = None
-                if config["store_plots"] is True:
-                    tpr_gap_plot = plot_tpr_pp(tpr_gap_pp_list, plot_version="TPRgap")
-                    weight_plot = plot_weights_gender(env.reward_scale.flatten())
+
 
                 # store eval metrics to dict and save to wandb
                 fairness_metric = 1-tpr_gap_rms

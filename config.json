@@ -20,8 +20,6 @@
     "inlp_num_classifiers": 50,
     "inlp_by_class": true,
 
-    "sup_scale_onehot": true,
-
     "exp_name": "Agent1 - ",
     "create_data": false,
     "num_epoch": 1,
@@ -30,9 +28,10 @@
     "wandb_name": "RL_for_imbalanced_classification",
     "store_tpr_wandb": false,
     "use_wandbid_name": false,
+    "wandb_username": "None",
  
-    "train_type": "linucb",
-    "reward_scale_type": "constant",
+    "train_type": "ppo",
+    "reward_scale_type": "EO",
 
     "n_hidden": 128,
     "lr":3e-4,
@@ -49,16 +48,5 @@
 
     "test_only": false,    
 
-    "normalize_rewards": true,
-    "global_double_loss": false,
-    "store_plots": false,
-    "store_critic_plots": false,
-
-    "scale_tpr": 0.5,
-    "use_reward_model": false,
-    "rm_num_batches": 128,
-    "rm_batch_size": 256,
-    "rm_update_every": 50,
-    "rm_scale_range": 100
-}
+    "normalize_rewards": true}
 

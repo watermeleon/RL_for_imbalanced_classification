@@ -14,10 +14,6 @@ def remap_professions(p2i, i2p, prof2fem, prof2perc, subset_classes):
         p2i_new[profession] = new_ind
         i2p_new[new_ind] = i2p[old_ind]
 
-        # actually based on prof so k:v stays the same, but removes the professions that are not in subset_classes
-        # prof2fem_new[profession] = prof2fem[profession]
-        # prof2perc_new[new_ind] = prof2perc[old_ind]
-
     print("New i2p:", i2p_new)
     return p2i_new, i2p_new, prof2fem_new, prof2perc_new
 
@@ -124,9 +120,9 @@ def get_prof2fem_v2(Y, genders):
 
     return prof2fem
 
-def loaddata(datapath, config):
+def load_profession_data(datapath, config):
     # the folder for the input data X :
-    data_folder = config["datafolder"] + "/"
+    data_folder = "biasbios_bert_embs" + "/"
  
     x_train = np.load(datapath + data_folder + 'train_input_ids.npy', allow_pickle =True)
     x_dev =np.load(datapath + data_folder + 'dev_input_ids.npy', allow_pickle =True)

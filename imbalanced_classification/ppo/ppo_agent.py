@@ -45,9 +45,6 @@ class PPO:
         self.use_critic = config["use_critic"]
 
         self.normalize_rewards = config["normalize_rewards"]
-        self.global_double_loss = config["global_double_loss"]
-        self.scale_tpr = config["scale_tpr"]
-        self.rm_scale_range = config["rm_scale_range"]
 
 
         self.buffer = RolloutBuffer()

@@ -1,4 +1,5 @@
-data/
+data/biasbios_bert_embs/*
+data/deepmoji/*
 results/
 movielens_data/
 *.zip
@@ -9,3 +10,4 @@ __pycache__/
 **/__pycache__/
 **/citation_data/
 notebooks/seed_plots/
+rl_imb_class

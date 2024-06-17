@@ -16,12 +16,11 @@ from collections import Counter
 from imbalanced_classification.embedding_debias_methods.INLPMethod import INLPMethod
 from imbalanced_classification.embedding_debias_methods.MPMethod import MPMethod, get_directions, get_directions_weighted
 
-from utils.load_process_data import *
+from utils.load_biasbios_data import *
 
 def get_prof_data(X, Y, gender, y_value):
     mask = Y == y_value
     filtered_X = X[mask]
-    filtered_Y = Y[mask]
     filtered_gender = gender[mask]
     return filtered_X, filtered_gender, mask
 
@@ -51,9 +50,7 @@ def get_inverse_freq(y_train, gender_train):
     import numpy as np
 
     # Combine y_train and gender_train into a single array
-    # combined = list(zip(y_train, gender_train))
     combined = [f'{y}_{g}' for y, g in zip(y_train, gender_train)]
-
 
     # Encode each unique class-gender combination to a unique integer
     encoder = LabelEncoder()
@@ -143,7 +140,6 @@ def get_INLP_cleaned_data_all(x_train, y_train, x_dev, y_dev, x_test, y_test, ge
     # majority = 0.67
     majority = 0.1
 
-    # if verbose: print('MAJORITY % perc:', majority)
     print('MAJORITY % perc:', majority)
 
     # Main function for INLP
@@ -222,7 +218,6 @@ def get_MP_cleaned_data_per_class(x_train, y_train, x_dev, y_dev, x_test, y_test
     if load_or_store_data:
         store_debiased_data(datapath, task_name, cleaned_x_train, cleaned_x_dev, cleaned_x_test)
 
-    # return x_train_clean, x_dev_clean, x_test_clean
     return cleaned_x_train, cleaned_x_dev, cleaned_x_test
 
 
@@ -230,7 +225,6 @@ def get_MP_cleaned_data_per_class(x_train, y_train, x_dev, y_dev, x_test, y_test
 
 
 def get_INLP_cleaned_data_per_class(x_train, y_train, x_dev, y_dev, x_test, y_test, gender_train, gender_dev, gender_test, config, load_or_store_data=True):
-    # task_name = "biasbios"   
     task_name = config['dataset'] + "_INLP_per_class"
     datapath = config['datapath']
     verbose = False

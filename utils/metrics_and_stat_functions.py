@@ -170,12 +170,8 @@ def similarity_vs_tpr(tpr_dict, title, measure, prof2fem, result_path,  title_na
     tpr_lst = [tpr_dict[p] for p in professions]
     sim_lst = [prof2fem[p] for p in professions]
 
-    # title_name    = r'$EO scaling$'
-    # f, ax = plt.subplots()
-    title_name    = 'LinUCB: Without scaling'
     
     fontsize = 17
-    # sns.set_style("whitegrid")
     sns.set_context("talk", font_scale=1.1)  # Set context to 'talk'
     sns.despine()
 
@@ -184,7 +180,6 @@ def similarity_vs_tpr(tpr_dict, title, measure, prof2fem, result_path,  title_na
 
     plt.xlabel("frequency women", fontsize = fontsize + 2)
     plt.ylabel(r'$TPR_{gap}$', fontsize = fontsize)
-    # plt.ylabel(r'$GAP_{female,y}^{TPR}$', fontsize = fontsize)
     if title_name is not None:
         plt.title(title_name, fontsize = fontsize)
     for p in professions:
@@ -201,17 +196,11 @@ def similarity_vs_tpr(tpr_dict, title, measure, prof2fem, result_path,  title_na
     plt.ylim(-0.3, 0.5)
     plt.tight_layout()
     plt.savefig(result_path + '_similarity_vs_tpr.pdf')
-    # plt.clf()
-    plt.show()
+    plt.clf()
 
     return correlation, p_value
 
-#MK: function that calculates aggregated TPR scores
-# def calc_tpr_gap(tpr_gaps):
-#     n = len(tpr_gaps) # number of occupations
-#     sum_of_squares = sum([gap**2 for gap in tpr_gaps.values()]) # sum of squares of TPR-GAPs
-#     rms = math.sqrt(sum_of_squares/n) # root mean square error
-#     return rms
+
 
 def calc_tpr_gap(tpr_gaps):
     """	 Calculate the root mean square of the TPR-GAPs. """	
