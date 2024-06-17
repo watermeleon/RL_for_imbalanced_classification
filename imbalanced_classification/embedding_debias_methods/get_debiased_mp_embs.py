@@ -119,9 +119,6 @@ def get_INLP_cleaned_data_all(x_train, y_train, x_dev, y_dev, x_test, y_test, ge
     inlp_object = INLPMethod(model, params)
 
     majority = Counter(gender_dev).most_common(1)[0][1] / float(len(gender_dev))
-    # majority = min(majority, 0.8)
-    # majority = 0.67
-    majority = 0.1
 
     print('MAJORITY % perc:', majority)
 
@@ -130,7 +127,7 @@ def get_INLP_cleaned_data_all(x_train, y_train, x_dev, y_dev, x_test, y_test, ge
                                                         x_test_shuffled, 
                                                         gender_train_shuffled,
                                                         x_dev, gender_dev,
-                                                        majority_acc=majority, verbose=verbose, by_class=config["inlp_by_class"], 
+                                                        majority_acc=0.1, verbose=verbose, by_class=config["inlp_by_class"], 
                                                         Y_train_main=y_train, Y_dev_main=y_dev)
     # Clean data
     x_train_clean = np.dot(x_train, output_p)  
