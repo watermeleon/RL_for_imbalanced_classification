@@ -10,14 +10,14 @@
     "emoji_ratio": 0.0,
 
     "gender_bool": false,
-    "debias_embs" : "mp", 
+    "debias_embs" : "none", 
     "debiase_posthoc": false,
 
     "inlp_num_classifiers": 50,
 
     "exp_name": "Agent1 - ",
     "create_data": false,
-    "num_epoch": 1,
+    "num_epoch": 10,
     "use_most_common_classes": false,
     "wandb_name": "RL_for_imbalanced_classification",
     "store_tpr_wandb": false,

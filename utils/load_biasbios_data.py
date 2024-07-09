@@ -90,31 +90,30 @@ def get_prof2fem_v2(Y, genders):
 
 def load_profession_data(datapath, config):
     # the folder for the input data X :
-    data_folder = "biasbios_bert_embs" + "/"
+    data_folder = "biasbios" + "/"
  
     x_train = np.load(datapath + data_folder + 'train_input_ids.npy', allow_pickle =True)
     x_dev =np.load(datapath + data_folder + 'dev_input_ids.npy', allow_pickle =True)
     x_test =np.load(datapath + data_folder + 'test_input_ids.npy',  allow_pickle =True)
 
-    with open (datapath + data_folder + 'train_labels', 'rb') as fp:
+    with open (datapath + data_folder + 'train_labels.pkl', 'rb') as fp:
         y_train = pickle.load(fp)
-    with open (datapath + data_folder + 'dev_labels', 'rb') as fp:
+    with open (datapath + data_folder + 'dev_labels.pkl', 'rb') as fp:
         y_dev = pickle.load(fp)
-    with open (datapath + data_folder + 'test_labels', 'rb') as fp:
+    with open (datapath + data_folder + 'test_labels.pkl', 'rb') as fp:
         y_test = pickle.load(fp)
 
-    with open (datapath + data_folder + 'train_gender_list', 'rb') as fp:
+    with open (datapath + data_folder + 'train_gender_list.pkl', 'rb') as fp:
         train_genders = np.array(pickle.load(fp))
-    with open (datapath + data_folder + 'test_gender_list', 'rb') as fp:
+    with open (datapath + data_folder + 'test_gender_list.pkl', 'rb') as fp:
         test_genders = np.array(pickle.load(fp))
-    with open (datapath + data_folder + 'dev_gender_list', 'rb') as fp:
+    with open (datapath + data_folder + 'dev_gender_list.pkl', 'rb') as fp:
         dev_genders = np.array(pickle.load(fp))
 
     if config["use_most_common_classes"]:
         x_train, y_train, train_genders = get_subset_by_gender(x_train, y_train, train_genders, config=config)
         x_dev, y_dev, dev_genders =  get_subset_by_gender(x_dev, y_dev, dev_genders, config=config)
         x_test, y_test, test_genders = get_subset_by_gender(x_test, y_test, test_genders, config=config)
-
 
 
     # print lengths of splits:
